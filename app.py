@@ -9,10 +9,13 @@ import csv
 import os
 import urllib.request
 from flask import Flask, jsonify, render_template, request
-from flask.exthook import ExtDeprecationWarning
-from warnings import simplefilter
-simplefilter("ignore", ExtDeprecationWarning)
+#from flask.exthook import ExtDeprecationWarning
+#from warnings import simplefilter
+#simplefilter("ignore", ExtDeprecationWarning)
 from flask_autoindex import AutoIndex
+import finnhub
+finnhub_client = finnhub.Client(api_key="c3gvm5qad3i83du7ke7g")
+import records
 
 app = Flask(__name__)
 #why do we need to comment the next line?
@@ -44,6 +47,8 @@ Session(app)
 
 # configure CS50 Library to use SQLite database
 db = SQL("sqlite:///finance.db")
+# conn = records.Database('sqlite:///finance.db')
+# db = conn.get_connection()
 
 @app.route("/")
 @login_required
@@ -122,7 +127,7 @@ def buy():
     if request.method=="POST":
         
         symbol = request.form.get('symbol')
-        shares = int(request.form.get('shares'))
+        shares = int(request.form.get('shares')) 
         #quote is a dictionary 
         quote = lookup(symbol)
         id=session['user_id']
@@ -262,14 +267,32 @@ def quote():
 #get to the yahoo page 
 @app.route("/get_quote")
 def get_quote():
-    url = "http://download.finance.yahoo.com/d/quotes.csv?f=snl1&s={}".format(request.args.get("symbol"))
-    webpage = urllib.request.urlopen(url)
-    #read the data, decode whatever yahoo gives back, breaks down the form into lines and then break down the line into words
-    datareader = csv.reader(webpage.read().decode("utf-8").splitlines())
-    row = next(datareader)
-    return jsonify({"name": row[1], "price": float(row[2]), "symbol": row[0].upper()})
+        data = request.args.get("symbol")
+        # url = "http://download.finance.yahoo.com/d/quotes.csv?f=snl1&s={}".format(request.args.get("symbol")) 
+        # webpage = urllib.request.urlopen(url)
+        # #read the data, decode whatever yahoo gives back, breaks down the form into lines and then break down the line into words
+        # datareader = csv.reader(webpage.read().decode("utf-8").splitlines())
+        # row = next(datareader)
+        quote = lookup(data)
+        return jsonify(
+            name=quote['name'], 
+            price=quote['price'], 
+            symbol=quote['symbol']
+        )
+        # return render_template("quoted.html", price=price, symbol=symbol, name=name)
+        
+        #tells variable price to get the value from the ['price'] dict we got 
+        # price = quote['price']
+        
+        #change the unit to usd 
+        # price=usd(price)
+        
+        #tells the variable'name' to get the value from the dict ["name"] we got from quote
+        # name = quote['name']
     # if not url:
     #     return apology('Symbol does not exist!')
+        
+
 
 # def quote():
 #     if request.method=='POST':
