@@ -14,7 +14,7 @@ from flask import Flask, jsonify, render_template, request
 #simplefilter("ignore", ExtDeprecationWarning)
 from flask_autoindex import AutoIndex
 import finnhub
-finnhub_client = finnhub.Client(api_key="c3gvm5qad3i83du7ke7g")
+finnhub_client = finnhub.Client(api_key="FINNHUB_API_KEY")
 import records
 
 app = Flask(__name__)
