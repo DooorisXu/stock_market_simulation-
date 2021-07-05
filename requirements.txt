@@ -1,4 +1,7 @@
+cs50
+finnhub_python
 Flask
 Flask-Session
+Flask_AutoIndex
 passlib
 SQLAlchemy
