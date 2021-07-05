@@ -3,6 +3,8 @@ import urllib.request
 
 from flask import redirect, render_template, request, session, url_for
 from functools import wraps
+import finnhub
+finnhub_client = finnhub.Client(api_key="FINN_HUB_API_KEY")
 
 #define the function apology 
 #the top and bottom will be in the url 
@@ -45,40 +47,50 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-def lookup(symbol):
+def lookup(symbol1):
     """Look up quote for symbol."""
-
+    
     # reject symbol if it starts with caret
-    if symbol.startswith("^"):
-        return None
+    # if symbol1.startswith("^"):
+        # return None
 
     # reject symbol if it contains comma
-    if "," in symbol:
-        return None
-
+    # if "," in symbol1:
+        # return None
+        
+    quote = finnhub_client.quote(symbol1)
+    comp = finnhub_client.company_profile2(symbol = symbol1)
+    
     # query Yahoo for quote
     # http://stackoverflow.com/a/21351911
-    try:
-        #.format method puts symbol into the {}
-        url = "http://download.finance.yahoo.com/d/quotes.csv?f=snl1&s={}".format(symbol)
+    # try:
+        # #.format method puts symbol into the {}
+        # #url = "http://download.finance.yahoo.com/d/quotes.csv?f=snl1&s={}".format(symbol)  finnhub_client.quote('AAPL')
+        # #url = "{}".format(symbol)
+        # finnhub_client.quote({}).format(symbol)
         
-        webpage = urllib.request.urlopen(url)
-        datareader = csv.reader(webpage.read().decode("utf-8").splitlines())
-        row = next(datareader)
-    except:
-        return None
+        # webpage = urllib.request.urlopen(url)
+        # datareader = csv.reader(webpage.read().decode("utf-8").splitlines())
+        # row = next(datareader)
+    # except:
+        # return None
 
     # ensure stock exists
     try:
-        price = float(row[2])
+        #price = float(row[2])
+        price = float(quote['c'])
     except:
         return None
 
     # return stock's name (as a str), price (as a float), and (uppercased) symbol (as a str)
     return {
-        "name": row[1],
+        #print(comp['name'])
+        # "name": row[1],
+        # "price": price,
+        # "symbol": row[0].upper()
+        "name": comp.get("name", None),
         "price": price,
-        "symbol": row[0].upper()
+        "symbol": comp.get("ticker", 0)
     }
 
 def usd(value):
